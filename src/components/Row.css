@@ -1,0 +1,29 @@
+.row {
+  margin-left: 20px;
+  margin-bottom: 30px;
+}
+
+.row h2 {
+  margin-bottom: 15px;
+}
+
+.row-posters {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.row-posters::-webkit-scrollbar {
+  display: none;
+}
+
+.row-poster {
+  max-height: 250px;
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+
+.row-poster:hover {
+  transform: scale(1.08);
+}
