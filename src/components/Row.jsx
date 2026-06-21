@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { fetchMovies, fetchMovieDetails } from "../services/omdb";
+import MovieCard from "./MovieCard";
 import "./Row.css";
 
 function Row({ title, query, onMovieSelect }) {
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    fetchMovies(query).then(setMovies);
+    const loadMovies = async () => {
+      const results = await fetchMovies(query);
+      setMovies(results || []);
+    };
+
+    loadMovies();
   }, [query]);
 
   const handleMovieClick = async (imdbID) => {
@@ -18,25 +24,19 @@ function Row({ title, query, onMovieSelect }) {
   };
 
   return (
-    <div className="row">
+    <section className="movie-row">
       <h2>{title}</h2>
 
-      <div className="row-posters">
+      <div className="movie-row-list">
         {movies.map((movie) => (
-          <img
+          <MovieCard
             key={movie.imdbID}
-            src={movie.Poster}
-onError={(e) => {
-  e.target.src =
-    "https://via.placeholder.com/200x300?text=No+Image";
-}}
-            alt={movie.Title}
-            className="row-poster"
+            movie={movie}
             onClick={() => handleMovieClick(movie.imdbID)}
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
