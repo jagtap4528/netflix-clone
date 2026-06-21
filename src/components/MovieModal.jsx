@@ -4,75 +4,105 @@ import {
   saveFavoritesToFirestore,
   getFavoritesFromFirestore,
 } from "../services/firestore";
+import { FaPlay, FaPlus, FaTimes, FaStar } from "react-icons/fa";
 
 function MovieModal({ movie, onClose }) {
   if (!movie) return null;
-  localStorage.setItem(
-  "continueWatching",
-  JSON.stringify(movie)
-);
+
+  const poster =
+    movie.Poster && movie.Poster !== "N/A"
+      ? movie.Poster
+      : "https://via.placeholder.com/500x750?text=No+Poster";
 
   const handleFavorite = async () => {
-  const user = auth.currentUser;
+    const user = auth.currentUser;
 
-  if (!user) {
-    alert("Please login first.");
-    return;
-  }
+    if (!user) {
+      alert("Please login first.");
+      return;
+    }
 
-  const favorites =
-    await getFavoritesFromFirestore(user.uid);
+    const favorites = await getFavoritesFromFirestore(user.uid);
 
-  const exists = favorites.find(
-    (fav) => fav.imdbID === movie.imdbID
-  );
-
-  let updatedFavorites;
-
-  if (exists) {
-    updatedFavorites = favorites.filter(
-      (fav) => fav.imdbID !== movie.imdbID
+    const exists = favorites.find(
+      (fav) => fav.imdbID === movie.imdbID
     );
-  } else {
-    updatedFavorites = [...favorites, movie];
-  }
 
-  await saveFavoritesToFirestore(
-    user.uid,
-    updatedFavorites
-  );
+    const updatedFavorites = exists
+      ? favorites.filter((fav) => fav.imdbID !== movie.imdbID)
+      : [...favorites, movie];
 
-  alert(
-    exists
-      ? "Removed from My List"
-      : "Added to My List"
-  );
-};
+    await saveFavoritesToFirestore(user.uid, updatedFavorites);
+
+    alert(exists ? "Removed from My List" : "Added to My List");
+  };
+
+  const handlePlay = () => {
+    localStorage.setItem("continueWatching", JSON.stringify(movie));
+    alert(`${movie.Title} added to Continue Watching`);
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div
+      <section
         className="modal-content"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
-        <button onClick={onClose}>✖</button>
-
-        <h2>{movie.Title}</h2>
-
-        <p>
-          <strong>IMDb:</strong> {movie.imdbRating}
-        </p>
-
-        <p>
-          <strong>Year:</strong> {movie.Year}
-        </p>
-
-        <p>{movie.Plot}</p>
-
-        <button onClick={handleFavorite}>
-          ❤️ Add / Remove My List
+        <button className="modal-close" onClick={onClose} aria-label="Close">
+          <FaTimes />
         </button>
-      </div>
+
+        <div className="modal-hero">
+          <img src={poster} alt={movie.Title} />
+
+          <div className="modal-hero-gradient" />
+
+          <div className="modal-title-area">
+            <h2>{movie.Title}</h2>
+
+            <div className="modal-meta">
+              <span className="modal-match">
+                <FaStar /> {movie.imdbRating || "N/A"} IMDb
+              </span>
+              <span>{movie.Year}</span>
+              <span>{movie.Rated || "U/A 16+"}</span>
+              <span>{movie.Runtime || "Movie"}</span>
+            </div>
+
+            <div className="modal-actions">
+              <button className="modal-play-btn" onClick={handlePlay}>
+                <FaPlay />
+                Play
+              </button>
+
+              <button
+                className="modal-list-btn"
+                onClick={handleFavorite}
+                title="Add or remove from My List"
+              >
+                <FaPlus />
+                My List
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-details">
+          <p className="modal-plot">{movie.Plot}</p>
+
+          <div className="modal-info">
+            <p>
+              <strong>Genre:</strong> {movie.Genre || "Not available"}
+            </p>
+            <p>
+              <strong>Director:</strong> {movie.Director || "Not available"}
+            </p>
+            <p>
+              <strong>Cast:</strong> {movie.Actors || "Not available"}
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
